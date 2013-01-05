@@ -1,10 +1,9 @@
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<title>AJAX Rating Stars Demo</title>
-		<script type="text/javascript" src="../lib/prototype/prototype.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
 		<script type="text/javascript" src="stars.js"></script>
 		<style type="text/css">
 			.prop{width: 500px; border: 1px green dotted; background: #EFEFEF; padding: 10px;}
@@ -52,6 +51,7 @@
 							</tr>
 							<tr>
 								<td valign="top">
+									<span id='rating2'></span>
 									<script type="text/javascript">
 
 										function rating(val)
@@ -60,6 +60,7 @@
 										}
 
 										var s2 = new Stars({
+											container: 'rating2',
 											maxRating: 5,
 											imagePath: 'images/',
 											callback: rating
@@ -85,6 +86,7 @@
 							</tr>
 							<tr>
 								<td valign="top">
+									<span id='rating3'></span>
 									<script type="text/javascript">
 										function ajaxRating(xml)
 										{
@@ -94,6 +96,7 @@
 											alert('You rated it ' + rating + ' star(s)!');
 										}
 										var s3 = new Stars({
+											container: 'rating3',
 											maxRating: 5,
 											actionURL: 'rate.php?rating=',
 											callback: ajaxRating,
@@ -126,6 +129,7 @@
 
 							<tr>
 								<td valign="top">
+									<span id="rating4"></span>
 									<script type="text/javascript">
 
 										function rating2(val)
@@ -135,6 +139,7 @@
 										}
 
 										var s4 = new Stars({
+											container: 'rating4',
 											maxRating: 5,
 											imagePath: 'images/',
 											callback: rating2
@@ -162,8 +167,10 @@
 
 							<tr>
 								<td valign="top">
+									<span id="rating5"></span>
 									<script type="text/javascript">
 										var s5 = new Stars({
+											container: 'rating5',
 											maxRating: 5,
 											value: 4,
 											imagePath: 'images/',
@@ -193,6 +200,7 @@
 										<input type="radio" value="4" name="starval" id="val4" onclick="setStarValue(4)" /><label for="val4">4</label>
 										<input type="radio" value="5" name="starval" id="val5" onclick="setStarValue(5)" /><label for="val5">5</label>
 									</div>
+									<span id="rating7"></span>
 									<script type="text/javascript">
 										function setStarValue(val) {
 											window.s7.setValue(val, false);
@@ -202,6 +210,7 @@
 											alert('was called anyway');
 										}
 										var s7 = new Stars({
+											container: rating7,
 											maxRating: 5,
 											callback: uncalledCallBack
 										});

@@ -3,9 +3,11 @@
  * @copyright 2006 Beau D. Scott http://beauscott.com
  * @
  */
+/**
+ * http://github.com/jwestbrook/Prototype.AJAX-Rating-Stars
+ */
 
-var Stars = Class.create();
-Stars.prototype = {
+var Stars = Class.create({
 	/**
 	 * Mouse X position
 	 * @var {Number} options
@@ -45,42 +47,33 @@ Stars.prototype = {
 		};
 		Object.extend(this.options, options);
 		this.locked = this.options.locked ? true : false;
+
+		this._star_xoffsets = {
+			empty: 27,
+			full: 0,
+			half: 54
+		};
+
 		/**
 		 * Image sources for hover and user-set state ratings
 		 */
-		this._starSrc = {
-			empty: this.options.imagePath + "star-empty.gif",
-			full: this.options.imagePath + "star.gif",
-			half: this.options.imagePath + "star-half.gif"
-		};
+		this._starSrc = this.options.imagePath+'starsprite-ps.png';
 		/**
 		 * Preload images
 		 */
-		for(var x in this._starSrc)
-		{
 			var y = new Image();
-			y.src = this._starSrc[x];
-		}
-
-		document.getElem
+			y.src = this._starSrc;
 
 		/**
 		 * Images to show for pre-set values, changes when hovered, if not locked.
 		 */
-		this._setStarSrc = {
-			empty: this.options.imagePath + "star-ps-empty.gif",
-			full: this.options.imagePath + "star-ps.gif",
-			half: this.options.imagePath + "star-ps-half.gif"
-		};
+		this._setStarSrc = this.options.imagePath+'starsprite.png';
 
 		/**
 		 * Preload images
 		 */
-		for(var x in this._setStarSrc)
-		{
-			var y = new Image();
-			y.src = this._setStarSrc[x];
-		}
+		 	var y = new Image();
+		 	y.src = this._setStarSrc;
 
 		this.value = -1;
 		this.stars = [];
@@ -95,8 +88,8 @@ Stars.prototype = {
 		else
 		{
 			this.id = 'starsContainer.' + Math.random(0, 100000);
-			document.write('<span id="' + this.id + '"></span>');
-			this._container = $(this.id);
+			this._container = new Element('span',{'id':this.id});
+			$(this.options.bindField).insert({after:this._container});
 		}
 		this._display();
 		this.setValue(this.options.value);
@@ -106,57 +99,60 @@ Stars.prototype = {
 	{
 		for(var i = 0; i < this.options.maxRating; i++)
 		{
-			var star = new Image();
-			star.src = this.locked ? this._starSrc.empty : this._setStarSrc.empty;
-			star.style.cursor = 'pointer';
-			star.title = 'Rate as ' + (i + 1);
-			!this.locked && Event.observe(star, 'mouseover', this._starHover.bind(this));
-			!this.locked && Event.observe(star, 'click', this._starClick.bind(this));
-			!this.locked && Event.observe(star, 'mouseout', this._starClear.bind(this));
+			var star = new Element('img',{
+				src : this.options.imagePath+'spacer.png',
+				style : 'cursor:pointer;height:30px;width:27px;',
+				title : 'Rate as '+(i+1)
+			});
+			star.setStyle({backgroundImage: 'url('+(this.locked ? this._starSrc : this._setStarSrc)+')' ,backgroundPosition :this._star_xoffsets.empty+'px 0'});
+//			star.setStyle({background :'url('+(this.locked ? this._starSrc : this._setStarSrc)+') '+this._star_xoffsets.empty+' 0'});
+
+
+			!this.locked && star.observe('mouseover',this._starHover.bind(this));
+			!this.locked && star.observe('click',this._starClick.bind(this));
+			!this.locked && star.observe('mouseout',this._starClear.bind(this));
 			this.stars.push(star);
-			this._container.appendChild(star);
+			this._container.insert(star);
 		}
 	},
 	_starHover: function(e)
 	{
 		if(this.locked) return;
 		if(!e) e = window.event;
-		var star = Event.element(e);
+		var star = e.findElement();
 
 		var greater = false;
-		for(var i = 0; i < this.stars.length; i++)
-		{
-			this.stars[i].src = greater ? this._starSrc.empty : this._starSrc.full;
-			if(this.stars[i] == star) greater = true;
-		}
+		this.stars.each(function(s){
+			s.setStyle({backgroundPosition : (greater ? this._star_xoffsets.empty : this._star_xoffsets.full)+'px 0' });
+			if(s == star) greater = true;
+		},this);
 	},
 	_starClick: function(e)
 	{
 		if(this.locked) return;
 		if(!e) e = window.event;
-		var star = Event.element(e);
+		var star = e.findElement();
 		this._clicked = true;
-		for(var i = 0; i < this.stars.length; i++)
-		{
-			if(this.stars[i] == star)
+		this.stars.each(function(s,index){
+			if(s == star)
 			{
-				this.setValue(i+1);
-				break;
+				this.setValue(index+1);
+				throw $break;
 			}
-		}
+		},this);
 	},
 	_starClear: function(e)
 	{
 		if(this.locked && this._initialized) return;
 		var greater = false;
-		for(var i = 0; i < this.stars.length; i++)
-		{
-			if(i > this.value) greater = true;
-			if((this._initialized && this._clicked) || this.value == -1)
-				this.stars[i].src = greater ? (this.value + .5 == i) ? this._starSrc.half : this._starSrc.empty : this._starSrc.full;
-			else
-				this.stars[i].src = greater ? (this.value + .5 == i) ? this._setStarSrc.half : this._setStarSrc.empty : this._setStarSrc.full;
-		}
+		this.stars.each(function(s,index){
+			if(index > this.value) greater = true;
+			console.log('greater='+greater+',value='+this.value+',index='+index);
+			console.log((this.value + .5) == index);
+			console.log((greater ? (((this.value + .5) == index) ? this._star_xoffsets.half : this._star_xoffsets.empty) : this._star_xoffsets.full));
+			s.setStyle({backgroundPosition : (greater ? (((this.value + .5) == index) ? this._star_xoffsets.half : this._star_xoffsets.empty) : this._star_xoffsets.full)+ 'px 0' });
+			console.log(s);
+		},this);
 	},
 	/**
 	 * Sets the value of the star object, redraws the UI
@@ -180,4 +176,4 @@ Stars.prototype = {
 		}
 		this._starClear();
 	}
-};
+});
